@@ -1,5 +1,9 @@
 # 홍보영상 프롬프트 메이커
 
+## ⬇ [설치 파일 다운로드 (Windows)](https://github.com/hyewons20/video-promo-prompt-maker/releases/latest/download/VideoPromoPromptMaker-Setup-1.0.0.exe)
+
+받은 exe를 실행하면 설치되고, 바로 사용할 수 있어요. "Windows의 PC 보호" 경고가 뜨면 **추가 정보 → 실행**을 누르세요.
+
 상품 키워드와 샵 이름만 넣으면 (예: `겨울 코트` / `상아 샵`) 고퀄리티 홍보영상 기획서와 **영상 AI에 바로 붙여넣을 씬별 프롬프트**를 만들어 주는 데스크탑 앱입니다.
 
 ## 실행
