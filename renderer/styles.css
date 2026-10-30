@@ -1,0 +1,170 @@
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --panel-2: #1e222b;
+  --line: #2a2f3a;
+  --text: #e8eaf0;
+  --muted: #9aa1b2;
+  --accent: #ff7a45;
+  --accent-2: #ffb347;
+  --ok: #4cd18a;
+  --err: #ff6b6b;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+  font-size: 14px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--line);
+}
+.brand { font-weight: 700; font-size: 16px; }
+.logo {
+  display: inline-grid; place-items: center;
+  width: 26px; height: 26px; margin-right: 6px; border-radius: 7px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff; font-size: 12px;
+}
+
+main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 18px;
+  padding: 18px 22px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  overflow-y: auto;
+}
+
+h2 { margin: 0 0 16px; font-size: 15px; }
+h3 { margin: 0 0 14px; }
+
+label { display: block; margin-bottom: 14px; color: var(--muted); font-size: 12.5px; }
+.req { color: var(--accent); }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+input, select, textarea {
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px 12px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+textarea { resize: vertical; }
+
+details { margin-bottom: 14px; }
+summary { cursor: pointer; color: var(--muted); margin-bottom: 12px; font-size: 13px; }
+
+button { font: inherit; cursor: pointer; border-radius: 8px; border: 0; }
+.primary {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #1a0f08;
+  font-weight: 700;
+  font-size: 15px;
+}
+.primary:disabled { opacity: .5; cursor: progress; }
+.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 8px 14px; }
+.ghost:hover { color: var(--text); border-color: var(--muted); }
+#cancelBtn { width: 100%; margin-top: 8px; }
+.hidden { display: none !important; }
+.warn { color: var(--accent-2); font-size: 12.5px; }
+.hint { color: var(--muted); font-size: 12px; margin-top: -6px; }
+
+/* 출력 영역 */
+.output { position: relative; }
+.empty, #loading { height: 100%; display: grid; place-content: center; text-align: center; color: var(--muted); line-height: 1.7; }
+.big { font-size: 46px; }
+.spinner {
+  width: 38px; height: 38px; margin: 0 auto 14px;
+  border: 3px solid var(--line); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.error { color: var(--err); background: #2a1618; border: 1px solid #4a2226; padding: 14px; border-radius: 8px; }
+
+.result-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.result-head > div:first-child { flex: 1 1 260px; min-width: 0; }
+.result-head h2 { font-size: 20px; margin: 0 0 6px; }
+.logline { color: var(--muted); margin: 0; line-height: 1.6; }
+.actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 18px; }
+.chip { background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; font-size: 12px; color: var(--muted); }
+.chip b { color: var(--text); font-weight: 600; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; border: 1px solid #fff3; }
+
+.card {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px; }
+.card-title { font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.beat { font-size: 10.5px; font-weight: 700; letter-spacing: .5px; padding: 3px 7px; border-radius: 5px; }
+.beat.HOOK { background: #3b1d12; color: var(--accent); }
+.beat.DESIRE { background: #33290f; color: var(--accent-2); }
+.beat.PROOF { background: #112a1e; color: var(--ok); }
+.beat.CTA { background: #1a2140; color: #8ea6ff; }
+.desc { color: var(--muted); margin: 0 0 10px; line-height: 1.6; }
+
+.prompt {
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  background: #0f1218;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  white-space: pre-wrap;
+  margin: 0;
+}
+.meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.meta div { background: #0f1218; border-radius: 8px; padding: 10px; font-size: 13px; line-height: 1.5; }
+.meta small { display: block; color: var(--muted); font-size: 11px; margin-bottom: 3px; }
+
+.copy { background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 5px 10px; font-size: 12px; }
+.copy:hover { color: var(--text); }
+.copy.done { color: var(--ok); border-color: var(--ok); }
+
+.section-title { margin: 22px 0 10px; font-size: 14px; color: var(--muted); font-weight: 600; }
+ul.tips { margin: 0; padding-left: 18px; line-height: 1.8; color: var(--text); }
+.tags { color: #8ea6ff; line-height: 1.8; }
+
+dialog {
+  background: var(--panel); color: var(--text);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  width: 420px; padding: 22px;
+}
+dialog::backdrop { background: #0008; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.dialog-actions .primary { width: auto; padding: 8px 18px; font-size: 14px; }

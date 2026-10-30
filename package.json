@@ -1,0 +1,27 @@
+{
+  "name": "video-promo-prompt-maker",
+  "version": "1.0.0",
+  "description": "키워드만으로 고퀄리티 홍보영상 프롬프트를 만드는 데스크탑 앱",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win"
+  },
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0"
+  },
+  "devDependencies": {
+    "electron": "^45.1.0",
+    "electron-builder": "^26.18.0"
+  },
+  "build": {
+    "appId": "com.promo.videoprompt",
+    "productName": "홍보영상 프롬프트 메이커",
+    "files": ["main.js", "preload.js", "src/**", "renderer/**", "package.json"],
+    "extraResources": [{ "from": "operator-key.txt", "to": "operator-key.txt" }],
+    "win": { "target": "nsis" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }
+  }
+}

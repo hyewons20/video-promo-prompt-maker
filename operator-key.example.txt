@@ -1,0 +1,1 @@
+이 파일을 operator-key.txt 로 복사한 뒤, 내용 전체를 운영자 Anthropic API 키(sk-ant-...) 한 줄로 바꾸세요.

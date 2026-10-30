@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'" />
+  <title>홍보영상 프롬프트 메이커</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="logo">▶</span> 홍보영상 프롬프트 메이커</div>
+    <button id="settingsBtn" class="ghost" title="설정">⚙ 설정</button>
+  </header>
+
+  <main>
+    <form id="form" class="panel">
+      <h2>키워드 입력</h2>
+      <label>상품 키워드 <span class="req">*</span>
+        <input id="product" placeholder="예: 겨울 코트" required />
+      </label>
+      <label>샵 이름 <span class="req">*</span>
+        <input id="shop" placeholder="예: 상아 샵" required />
+      </label>
+
+      <div class="row">
+        <label>영상 길이
+          <select id="length">
+            <option value="15">15초</option>
+            <option value="30" selected>30초</option>
+            <option value="60">60초</option>
+          </select>
+        </label>
+        <label>화면 비율
+          <select id="ratio"></select>
+        </label>
+      </div>
+
+      <label>대상 영상 AI
+        <select id="tool"></select>
+      </label>
+
+      <details>
+        <summary>세부 옵션 (선택)</summary>
+        <label>분위기 / 톤
+          <input id="tone" placeholder="예: 고급스럽고 따뜻한, 미니멀" />
+        </label>
+        <label>추가 요청사항
+          <textarea id="notes" rows="3" placeholder="예: 30대 여성 타깃, 캐시미어 소재 강조, 연말 세일 20%"></textarea>
+        </label>
+      </details>
+
+      <button id="genBtn" type="submit" class="primary">✨ 영상 프롬프트 만들기</button>
+      <button id="cancelBtn" type="button" class="ghost hidden">취소</button>
+      <p id="keyWarn" class="warn hidden">API 키가 없습니다. ⚙ 설정에서 Anthropic API 키를 입력하세요.</p>
+    </form>
+
+    <section id="output" class="panel output">
+      <div id="empty" class="empty">
+        <div class="big">🎬</div>
+        <p>상품 키워드와 샵 이름만 입력하면<br />씬별 영상 프롬프트·자막·내레이션·SNS 문구까지 만들어 드려요.</p>
+      </div>
+      <div id="loading" class="hidden">
+        <div class="spinner"></div>
+        <p id="loadingText">크리에이티브 디렉터가 콘셉트를 구상하고 있어요…</p>
+      </div>
+      <div id="error" class="error hidden"></div>
+      <div id="result" class="hidden"></div>
+    </section>
+  </main>
+
+  <dialog id="settings">
+    <form method="dialog">
+      <h3>설정</h3>
+      <label>Anthropic API 키
+        <input id="apiKey" type="password" placeholder="sk-ant-..." autocomplete="off" />
+      </label>
+      <p class="hint">키는 이 PC에 암호화되어 저장됩니다. console.anthropic.com 에서 발급받을 수 있어요.</p>
+      <div class="dialog-actions">
+        <button value="cancel" class="ghost">닫기</button>
+        <button id="saveKeyBtn" value="save" class="primary">저장</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
