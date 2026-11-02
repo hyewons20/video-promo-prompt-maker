@@ -1,6 +1,6 @@
 {
   "name": "video-promo-prompt-maker",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "키워드만으로 고퀄리티 홍보영상 프롬프트를 만드는 데스크탑 앱",
   "main": "main.js",
   "scripts": {
@@ -20,7 +20,7 @@
   "build": {
     "appId": "com.promo.videoprompt",
     "productName": "홍보영상 프롬프트 메이커",
-    "artifactName": "VideoPromoPromptMaker-Setup-${version}.${ext}",
+    "artifactName": "VideoPromoPromptMaker-Setup.${ext}",
     "files": ["main.js", "preload.js", "src/**", "renderer/**", "package.json"],
     "asarUnpack": ["node_modules/@imgly/**", "node_modules/onnxruntime-node/**", "node_modules/sharp/**"],
     "extraResources": [{ "from": "operator-key.txt", "to": "operator-key.txt" }],

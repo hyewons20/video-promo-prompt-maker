@@ -3,6 +3,14 @@ const Anthropic = require('@anthropic-ai/sdk').default;
 const { validateInput, buildRequest } = require('./metaprompt');
 
 const MODEL = 'claude-opus-5-5';
+const MAX_ATTEMPTS = 2; // 빈 프롬프트가 있으면 사용자 모르게 한 번만 다시 생성
+
+// 씬에 비어 있는 프롬프트가 있는지 (LTX는 끝 프레임까지 필수)
+function isIncomplete(result, tool) {
+  return result.scenes.some(
+    (s) => !s.keyframe_prompt?.trim() || !s.video_prompt?.trim() || (tool === 'ltx' && !s.keyframe_end_prompt?.trim())
+  );
+}
 
 async function generate({ apiKey, input, onDelta, signal }) {
   const invalid = validateInput(input);
@@ -12,26 +20,32 @@ async function generate({ apiKey, input, onDelta, signal }) {
   const client = new Anthropic({ apiKey });
 
   try {
-    const stream = client.beta.messages.stream(
-      {
-        model: MODEL,
-        max_tokens: 32000,
-        thinking: { type: 'adaptive' },
-        output_config: { effort: 'high', format: { type: 'json_schema', schema } },
-        betas: ['server-side-fallback-2026-07-01'],
-        fallbacks: 'default',
-        system,
-        messages: [{ role: 'user', content }],
-      },
-      { signal }
-    );
-    stream.on('text', (text) => onDelta?.(text));
-    const message = await stream.finalMessage();
+    let result;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const stream = client.beta.messages.stream(
+        {
+          model: MODEL,
+          max_tokens: 32000,
+          thinking: { type: 'adaptive' },
+          output_config: { effort: 'high', format: { type: 'json_schema', schema } },
+          betas: ['server-side-fallback-2026-07-01'],
+          fallbacks: 'default',
+          system,
+          messages: [{ role: 'user', content }],
+        },
+        { signal }
+      );
+      stream.on('text', (text) => onDelta?.(text));
+      const message = await stream.finalMessage();
 
-    if (message.stop_reason === 'refusal') return { ok: false, error: '요청이 거절되었습니다. 키워드를 바꿔서 다시 시도해 주세요.' };
-    if (message.stop_reason === 'max_tokens') return { ok: false, error: '응답이 너무 길어 잘렸습니다. 영상 길이를 줄여 다시 시도해 주세요.' };
-    const text = message.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
-    return { ok: true, result: JSON.parse(text) };
+      if (message.stop_reason === 'refusal') return { ok: false, error: '요청이 거절되었습니다. 키워드를 바꿔서 다시 시도해 주세요.' };
+      if (message.stop_reason === 'max_tokens') return { ok: false, error: '응답이 너무 길어 잘렸습니다. 영상 길이를 줄여 다시 시도해 주세요.' };
+      const text = message.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
+      result = JSON.parse(text);
+      if (!isIncomplete(result, input.tool)) break;
+    }
+    // 두 번째도 비어 있으면 그래도 결과는 보여 준다 (나머지 컷은 쓸 수 있으므로)
+    return { ok: true, result };
   } catch (err) {
     if (err instanceof Anthropic.APIUserAbortError) return { ok: false, error: '생성을 취소했습니다.' };
     if (err instanceof Anthropic.AuthenticationError) return { ok: false, error: 'API 키가 올바르지 않습니다. 운영자에게 문의해 주세요.' };
@@ -43,4 +57,4 @@ async function generate({ apiKey, input, onDelta, signal }) {
   }
 }
 
-module.exports = { generate };
+module.exports = { generate, isIncomplete };
