@@ -1,23 +1,37 @@
 // 메타프롬프트 엔진: 키워드 + 참고 이미지 → Claude 요청 (system / content / 출력 스키마)
 
 // 모든 툴 공통: 씬마다 FLUX 3 키프레임(첫 프레임 이미지) → 영상 AI 이미지-투-비디오
-const KEYFRAME_GUIDE = `# Keyframe prompts (FLUX 3, still image = first frame of each scene)
+// LTX는 첫·끝 프레임 둘 다 넣는다 (ComfyUI video_ltx2_5_flf2v: LTXVAddGuide frame_idx 0 / -1)
+const KEYFRAME_GUIDE = `# Keyframe prompts (FLUX 3 still images)
+- keyframe_prompt = the FIRST frame of the scene. keyframe_end_prompt = the LAST frame of the scene (only when the target section says so; otherwise "").
 - Describe ONE frozen instant. No motion, no time passing, no "slow motion", no camera movement words.
 - Order: main subject first → composition & framing (state the aspect ratio, e.g. "in a vertical 9:16 frame") → setting → lighting → lens & aperture → color grade / film look.
 - FLUX 3 does not use a negative prompt. Rewrite anything to avoid as a positive statement (e.g. instead of "no logo" write "the cup surface is completely blank and clean").
 - You may specify palette colors with HEX codes inline, e.g. "warm walnut wood counter (#6B4A33)".
 - 90–150 words. Photographic, specific, premium.
+- Product recognizability: whenever the product is in frame, show it in its true, recognizable form with its silhouette clearly readable (the product shape lock). State the count explicitly ("a single sock", "one coat"). Choose a viewpoint that reveals the silhouette (side profile or flat top-down for flat goods); avoid angles, folds, rolls or crops that hide what the product is.
 - If the user attached reference images, the user will feed the cutout image into FLUX 3 as an image reference. Place that exact item in the frame and describe it with its lock phrase.`;
 
 const TOOLS = {
   ltx: {
-    label: 'FLUX 3 → LTX-2.5 (키프레임 → 이미지-투-비디오)',
+    label: 'FLUX 3 → LTX-2.5 (첫·끝 프레임 → 영상)',
     clipSeconds: 8,
-    guide: `- Video model: LTX-2.5, used as IMAGE-TO-VIDEO from the FLUX 3 keyframe. The keyframe already defines the look, so keep appearance short (restate lock phrases compactly) and spend the words on MOTION, CAMERA and TIME ORDER, written as one paragraph.
-- Write actions chronologically: "first… then… finally…". One clear camera move per scene (e.g. "slow smooth dolly-in", "locked-off camera with a very slow push-in").
-- LTX-2.5 generates audio with the video. End every video prompt with an "Audio:" sentence containing SFX and ambience ONLY (narration and music are added in editing). Reuse the same ambience lock phrase in every scene so the soundscape stays continuous across cuts.
-- LTX-2.5 has a negative prompt field: make negative_prompt a thorough comma-separated list (text, logos, watermark, distorted hands, extra fingers, morphing objects, flicker, camera shake, sudden cuts, CGI look, music with vocals, etc.).
-- If a scene must be shorter than the clip length, set generate_seconds to 8 and tell the user to trim in settings_ko.`,
+    // LTX 2.4+ (Gemma 4 인코더) 학습 캡션 스타일 — ComfyUI nodes_textgen.py LTX24_I2V_SYSTEM_PROMPT 기준
+    guide: `- Workflow: every scene uses LTX-2.5 FIRST-AND-LAST-FRAME to video. Write BOTH keyframe_prompt (first frame) and keyframe_end_prompt (last frame) for EVERY scene, not only for special shots.
+- The two keyframes are the same continuous take: same location, same lighting, same lock phrases, same lens. The camera position may differ only by the camera move described in the video prompt (e.g. a slow push-in → the last frame is slightly tighter). Only the action changes between them, so LTX interpolates natural motion instead of morphing or cutting.
+- The last frame must be the scene's clearest product moment: the product fully visible in its recognizable shape, resting naturally, with the empty area for on-screen text when it is the CTA scene.
+- video_prompt follows the LTX-2.5 training-caption style (Lightricks' official prompt guide):
+  1. One single continuous paragraph in English, roughly 150–220 words of narration plus the verbatim lock phrases (about 280 words at most in total; keep the non-lock narration concise rather than shortening lock phrases). No headings, no bullet points, no labels such as "Audio:" or "Visual:", no timestamps, no cuts — one continuous take.
+  2. Begin immediately with the visual description. Never write "The scene opens…", "We see…", "There is…", "The video starts…".
+  3. First-frame grounding: the opening sentences match the first keyframe exactly (same subject, lock phrases, setting, lighting, composition). The closing sentences arrive exactly at the last keyframe's state.
+  4. Weave into the prose, never as tags: exactly one shot type (extreme wide shot / wide shot / medium shot / medium close-up / close-up / extreme close-up), the camera motion (always stated; if none, say the camera remains static), and the viewpoint (front-facing / side view / top-down / low-angle / high-angle / over-the-shoulder). Example: "a close-up frames…, captured from a top-down angle as the camera slowly pushes in…".
+  5. Strict real-time chronology with transitions such as "Initially…", "A moment later…", "Simultaneously…", "Finally…". Use present-progressive verbs ("is lifting", "is settling"). Keep the action simple enough to finish within the clip.
+  6. Objective and observable only: describe visible actions and audible sounds, not emotions or intentions (not "she feels cozy" but "her shoulders relax and her toes curl slowly"). No smell, taste or touch.
+  7. Restrained, natural wording: plain colors ("oatmeal sock", not "vibrant"), neutral light ("soft morning window light"), no exaggerated adjectives.
+  8. Sound woven chronologically into the paragraph alongside the actions that make it (e.g. "…sets the cup down with a soft ceramic clink while quiet room tone continues"), matching action tempo. Use the ambience lock phrase in every scene. SFX and ambience only — narration and music are added in editing, so no speech, singing or music in the prompt.
+  9. Add a few production-quality descriptors woven into the prose ("warm cinematic lighting", "crisp fine knit texture", "film-grade color") without adding new objects or actions.
+- LTX-2.5 has a negative prompt field: make negative_prompt a thorough comma-separated list (text, logos, watermark, distorted hands, extra fingers, morphing objects, flicker, camera shake, sudden cuts, CGI look, music, speech, etc.) PLUS the shape failures typical for this product (e.g. socks: "tube shape, shorts shape, legwarmer, two joined cuffs, missing heel"; coat: "cape shape, missing sleeves").
+- settings_ko: "LTX-2.5 첫·끝 프레임 워크플로(ComfyUI 템플릿 video_ltx2_5_flf2v) / 첫 프레임 = 키프레임 시작, 끝 프레임 = 키프레임 끝 / 9:16 / 8초" plus trimming if the scene is shorter. If a scene must be shorter than the clip length, set generate_seconds to 8.`,
   },
   veo: {
     label: 'Google Veo 3',
@@ -70,21 +84,26 @@ A shop owner gives you a product keyword and a shop name (sometimes reference im
 # How to think
 1. Infer the product's core selling points, the most likely customer, the season/occasion and the emotional payoff. Extra notes from the user override your assumptions.
 2. Pick ONE strong, specific creative concept with a scroll-stopping hook. Avoid stock-footage clichés.
+   - By default, do NOT use transformation, disguise or reveal concepts: no product disguised as something else (e.g. socks rolled up to look like a cinnamon roll), no objects morphing into the product, no magic transitions, no "it was actually…" twists. AI video models lose the product's shape in these shots. Use them only if the user's tone or notes explicitly ask for a transformation, twist or reveal.
+   - Instead, show the real product in its recognizable form from the first frame it appears in, and get the hook from staging, light, texture, a striking composition, a satisfying natural action, or a relatable human moment.
 3. Story arc: HOOK (the first 1–2 seconds must stop the scroll) → DESIRE (product hero, texture, detail, in use) → PROOF (lifestyle payoff) → CTA (shop name + call to action). Short videos may merge beats, but always start with HOOK and end with CTA.
 
 # Consistency locks (most important)
 Image and video models have no memory between cuts, so the same product, person, place and sound drift unless they are described with the exact same words every time.
 - Define "locks": short, precise English phrases for every element that appears in more than one scene, plus the overall look and the soundscape. Kinds:
-  - product: the exact item (shape, material, color with HEX, distinctive details). Keep it unbranded unless it is the shop's own product.
+  - product: the exact item, written so the product is recognizable from its outline alone. Start with count + silhouette and structural parts in spatial terms, then material, color with HEX and distinctive details (e.g. "a single crew sock, L-shaped in side profile with a cupped heel at the bend, a rounded toe and a ribbed cuff reaching mid-calf, soft oatmeal cotton knit (#D8C7AE) with one thin terracotta stripe (#C0623B) at the cuff"). Material and color alone are not enough. Keep it unbranded unless it is the shop's own product.
   - person: the same model (approximate age, ethnicity if relevant, hair, clothing). Never a real or famous person.
   - set: the main surface/location.
   - lighting: one lighting logic for the whole film.
   - look: lens family, color grade, film texture.
   - ambience: the background soundscape used in every Audio line.
   - voice: only if the video model speaks lines; one voice description reused verbatim.
-- Every keyframe_prompt and video_prompt that shows an element MUST contain its lock phrase copied VERBATIM (same words, same order). List those lock ids in lock_ids. The lighting, look and ambience locks apply to every scene.
-- In keyframe_reference_ko, tell the user which image to feed as reference for that scene's keyframe (e.g. "업로드한 상품 누끼 이미지", "씬1 키프레임에서 고른 컵 이미지") so the same product/person carries over visually. From scene 2 on, always reuse an earlier keyframe or the uploaded cutout as reference when the same product or person appears.
+- Every keyframe_prompt, keyframe_end_prompt and video_prompt that shows an element MUST contain its lock phrase copied VERBATIM (same words, same order). List those lock ids in lock_ids. The lighting, look and ambience locks apply to every scene.
+- In keyframe_reference_ko, tell the user which image to feed as reference for that scene's keyframes (e.g. "업로드한 상품 누끼 이미지", "씬1 끝 프레임 이미지") so the same product/person carries over visually. The end keyframe of a scene uses that scene's first keyframe as reference. From scene 2 on, always reuse an earlier keyframe or the uploaded cutout as reference when the same product or person appears.
 - Music: recommend ONE continuous music track added in editing (not generated per clip), so sound does not jump between cuts.
+
+# Single-take reliability
+- Write every prompt so it works on the first generation. Never tell the user to generate several candidates or variations, try multiple seeds, re-roll, or pick the best take — not in tips, settings_ko or keyframe_reference_ko. Put the reliability into the prompts themselves (clear shape, simple action, stable camera, matching first/last frames).
 
 # Reference images
 If images are attached, they are background-removed cutouts the shop owner supplied, each with a role (product / person / space).
@@ -92,7 +111,8 @@ If images are attached, they are background-removed cutouts the shop owner suppl
 - The concept must feature that exact product. The keyframe prompts must stage it so the cutout can be used as the image reference.
 
 # Prompt language and text rules
-- keyframe_prompt, video_prompt, negative_prompt, oneshot_prompt and lock phrases: ENGLISH.
+- keyframe_prompt, keyframe_end_prompt, video_prompt, negative_prompt, oneshot_prompt and lock phrases: ENGLISH.
+- keyframe_end_prompt: write it only when the video section below asks for a last frame; otherwise return "".
 - Everything else (titles, descriptions, settings, on-screen text, voiceover, captions, tips): KOREAN.
 - Never ask image/video models to render text, prices, logos or the shop name — AI renders letters (especially Korean) badly. All words go into on_screen_text for the editor to overlay. Leave clean empty space in the frame where CTA text will sit.
 
@@ -151,7 +171,7 @@ const SCHEMA = {
         additionalProperties: false,
         required: [
           'number', 'beat', 'duration_seconds', 'generate_seconds', 'description_ko', 'lock_ids',
-          'keyframe_prompt', 'keyframe_reference_ko', 'video_prompt', 'settings_ko', 'on_screen_text', 'voiceover',
+          'keyframe_prompt', 'keyframe_end_prompt', 'keyframe_reference_ko', 'video_prompt', 'settings_ko', 'on_screen_text', 'voiceover',
         ],
         properties: {
           number: { type: 'integer' },
@@ -161,6 +181,7 @@ const SCHEMA = {
           description_ko: { type: 'string' },
           lock_ids: { type: 'array', items: { type: 'string' } },
           keyframe_prompt: { type: 'string' },
+          keyframe_end_prompt: { type: 'string' },
           keyframe_reference_ko: { type: 'string' },
           video_prompt: { type: 'string' },
           settings_ko: { type: 'string' },

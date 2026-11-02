@@ -162,7 +162,7 @@ function swatch(color) {
 
 // 일관성 검사: 씬에서 쓴다고 한 락 문구가 프롬프트에 그대로 들어갔는지
 function checkLocks(scene, locks) {
-  const text = `${scene.keyframe_prompt}\n${scene.video_prompt}`.toLowerCase();
+  const text = `${scene.keyframe_prompt}\n${scene.keyframe_end_prompt || ''}\n${scene.video_prompt}`.toLowerCase();
   const used = locks.filter((l) => scene.lock_ids.includes(l.id));
   const missing = used.filter((l) => !text.includes(l.phrase.toLowerCase()));
   return { total: used.length, missing };
@@ -171,7 +171,7 @@ function checkLocks(scene, locks) {
 function renderResult(r, input) {
   const c = r.concept;
   const toolLabel = options?.tools[input.tool] || input.tool;
-  const videoLabel = toolLabel.split('→').pop().replace(/\s*\(.*\)$/, '').trim(); // "FLUX 3 → LTX-2.5 (…)" → "LTX-2.5"
+  const videoLabel = toolLabel.replace(/\s*\(.*\)$/, '').split('→').pop().trim(); // "FLUX 3 → LTX-2.5 (…)" → "LTX-2.5"
 
   const locks = r.locks
     .map(
@@ -199,11 +199,17 @@ function renderResult(r, input) {
         </div>
         <p class="desc">${esc(s.description_ko)}</p>
 
-        <div class="step"><span>① 키프레임 이미지 (FLUX 3)</span>${copyBtn(s.keyframe_prompt)}</div>
         ${s.keyframe_reference_ko ? `<p class="ref">📎 레퍼런스: ${esc(s.keyframe_reference_ko)}</p>` : ''}
+        <div class="step"><span>① ${s.keyframe_end_prompt ? '첫 프레임' : '키프레임'} 이미지 (FLUX 3)</span>${copyBtn(s.keyframe_prompt)}</div>
         <pre class="prompt">${esc(s.keyframe_prompt)}</pre>
+        ${
+          s.keyframe_end_prompt
+            ? `<div class="step"><span>② 끝 프레임 이미지 (FLUX 3)</span>${copyBtn(s.keyframe_end_prompt)}</div>
+        <pre class="prompt">${esc(s.keyframe_end_prompt)}</pre>`
+            : ''
+        }
 
-        <div class="step"><span>② 영상 (${esc(videoLabel)})</span>${copyBtn(s.video_prompt)}</div>
+        <div class="step"><span>${s.keyframe_end_prompt ? '③' : '②'} 영상 (${esc(videoLabel)})</span>${copyBtn(s.video_prompt)}</div>
         <pre class="prompt">${esc(s.video_prompt)}</pre>
         ${s.settings_ko ? `<p class="settings-line">⚙ ${esc(s.settings_ko)}</p>` : ''}
 
@@ -236,7 +242,7 @@ function renderResult(r, input) {
     <div class="section-title">🔒 일관성 고정 문구 — 모든 컷에 똑같이 들어가 상품·인물·소리가 유지돼요</div>
     <div class="locks">${locks}</div>
 
-    <div class="section-title">씬별 프롬프트 (${r.scenes.length}개 씬 · 키프레임 이미지 → 영상 순서로 생성)</div>
+    <div class="section-title">씬별 프롬프트 (${r.scenes.length}개 씬 · ${r.scenes.some((s) => s.keyframe_end_prompt) ? '첫·끝 프레임 이미지' : '키프레임 이미지'} → 영상 순서로 생성)</div>
     ${scenes}
 
     <div class="section-title">네거티브 프롬프트 (영상 AI)</div>
@@ -312,13 +318,13 @@ function toMarkdown(r, input, toolLabel) {
       `## 씬 ${s.number} [${s.beat}] · ${s.duration_seconds}초`,
       s.description_ko,
       '',
-      '### ① 키프레임 이미지 (FLUX 3)',
       s.keyframe_reference_ko ? `- 레퍼런스: ${s.keyframe_reference_ko}` : '',
+      `### ① ${s.keyframe_end_prompt ? '첫 프레임' : '키프레임'} 이미지 (FLUX 3)`,
       '```',
       s.keyframe_prompt,
       '```',
-      '',
-      `### ② 영상 (${toolLabel})`,
+      ...(s.keyframe_end_prompt ? ['### ② 끝 프레임 이미지 (FLUX 3)', '```', s.keyframe_end_prompt, '```'] : []),
+      `### ${s.keyframe_end_prompt ? '③' : '②'} 영상 (${toolLabel})`,
       '```',
       s.video_prompt,
       '```',
