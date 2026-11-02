@@ -2,7 +2,6 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('api', {
   options: () => ipcRenderer.invoke('options'),
-  saveCode: (code) => ipcRenderer.invoke('save-code', code),
   generate: (input) => ipcRenderer.invoke('generate', input),
   cancel: () => ipcRenderer.invoke('cancel'),
   pickImage: () => ipcRenderer.invoke('pick-image'),

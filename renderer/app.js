@@ -21,47 +21,22 @@ const LOADING_STEPS = [
   '자막과 내레이션을 다듬는 중…',
 ];
 
-// ---- 서버 옵션 불러오기 (초대 코드 확인 겸) ----
+// ---- 옵션 불러오기 ----
 async function loadOptions() {
-  const res = await window.api.options();
-  if (!res.ok) {
-    options = null;
-    $('who').textContent = '';
-    warn(res.needCode ? '🔑 초대 코드를 입력해야 사용할 수 있어요.' : res.error);
-    if (res.needCode) openSettings(res.error);
-    return false;
-  }
-  options = res.options;
+  options = await window.api.options();
   const fill = (el, entries) => (el.innerHTML = entries.map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join(''));
   fill($('tool'), Object.entries(options.tools));
   fill($('ratio'), Object.entries(options.ratios));
   fill($('length'), options.lengths.map((n) => [n, `${n}초`]));
   $('length').value = options.lengths.includes(15) ? '15' : String(options.lengths[0]);
-  $('who').textContent = options.name ? `${options.name} 님` : '';
-  warn('');
+  warn(options.hasKey ? '' : 'API 키가 없습니다. operator-key.txt를 넣고 다시 빌드해 주세요.');
   renderImages();
-  return true;
 }
 
 function warn(msg) {
   $('formWarn').textContent = msg || '';
   show($('formWarn'), Boolean(msg));
 }
-
-// ---- 초대 코드 ----
-function openSettings(error) {
-  $('codeInput').value = '';
-  $('codeError').textContent = error || '';
-  show($('codeError'), Boolean(error));
-  if (!$('settings').open) $('settings').showModal();
-}
-$('settingsBtn').onclick = () => openSettings();
-$('saveCodeBtn').onclick = async (e) => {
-  e.preventDefault();
-  await window.api.saveCode($('codeInput').value);
-  $('settings').close();
-  await loadOptions();
-};
 
 // ---- 참고 이미지 ----
 $('addImageBtn').onclick = async () => {
@@ -121,7 +96,6 @@ $('images').addEventListener('click', async (e) => {
 // ---- 생성 ----
 $('form').onsubmit = async (e) => {
   e.preventDefault();
-  if (!options && !(await loadOptions())) return;
   const input = {
     product: $('product').value.trim(),
     shop: $('shop').value.trim(),

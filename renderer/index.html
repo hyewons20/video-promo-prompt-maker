@@ -9,10 +9,6 @@
 <body>
   <header>
     <div class="brand"><span class="logo">▶</span> 홍보영상 프롬프트 메이커 <span class="ver">v2</span></div>
-    <div class="head-right">
-      <span id="who" class="who"></span>
-      <button id="settingsBtn" class="ghost" title="초대 코드">🔑 초대 코드</button>
-    </div>
   </header>
 
   <main>
@@ -75,21 +71,6 @@
       <div id="result" class="hidden"></div>
     </section>
   </main>
-
-  <dialog id="settings">
-    <form method="dialog">
-      <h3>초대 코드</h3>
-      <label>운영자에게 받은 초대 코드
-        <input id="codeInput" placeholder="ABCD-EFGH-JKLM" autocomplete="off" spellcheck="false" />
-      </label>
-      <p class="hint">코드는 이 PC에 암호화되어 저장됩니다.</p>
-      <p id="codeError" class="warn hidden"></p>
-      <div class="dialog-actions">
-        <button value="cancel" class="ghost">닫기</button>
-        <button id="saveCodeBtn" value="save" class="primary">저장</button>
-      </div>
-    </form>
-  </dialog>
 
   <script src="app.js"></script>
 </body>

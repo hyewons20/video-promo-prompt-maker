@@ -1,5 +1,4 @@
-// 메타프롬프트 엔진 (서버 전용): 키워드 + 참고 이미지 → Claude 요청 (system / content / 출력 스키마)
-// 서버에만 두어서 고객 앱에서 프롬프트 노하우와 API 키가 보이지 않게 한다.
+// 메타프롬프트 엔진: 키워드 + 참고 이미지 → Claude 요청 (system / content / 출력 스키마)
 
 // 모든 툴 공통: 씬마다 FLUX 3 키프레임(첫 프레임 이미지) → 영상 AI 이미지-투-비디오
 const KEYFRAME_GUIDE = `# Keyframe prompts (FLUX 3, still image = first frame of each scene)
@@ -190,7 +189,7 @@ const MAX_TEXT = { product: 60, shop: 40, tone: 120, notes: 500 };
 const MAX_IMAGES = 3;
 const MAX_IMAGE_B64 = 2_000_000; // 이미지 1장 base64 약 1.5MB
 
-export function validateInput(body) {
+function validateInput(body) {
   if (!body || typeof body !== 'object') return '요청 형식이 올바르지 않습니다.';
   for (const [k, max] of Object.entries(MAX_TEXT)) {
     const v = body[k] ?? '';
@@ -211,7 +210,7 @@ export function validateInput(body) {
   return null;
 }
 
-export function buildRequest(input) {
+function buildRequest(input) {
   const tool = TOOLS[input.tool];
   const total = Number(input.length);
   const sceneCount = Math.max(2, Math.round(total / tool.clipSeconds));
@@ -246,7 +245,7 @@ export function buildRequest(input) {
   return { system, content, schema: SCHEMA };
 }
 
-export function publicOptions() {
+function publicOptions() {
   return {
     tools: Object.fromEntries(Object.entries(TOOLS).map(([k, v]) => [k, v.label])),
     ratios: RATIOS,
@@ -255,3 +254,5 @@ export function publicOptions() {
     maxImages: MAX_IMAGES,
   };
 }
+
+module.exports = { validateInput, buildRequest, publicOptions };
