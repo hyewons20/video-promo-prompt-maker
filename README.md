@@ -2,7 +2,7 @@
 
 상품 키워드와 샵 이름만 넣으면 (예: `겨울 코트` / `상아 샵`) 고퀄리티 홍보영상 기획서와 **이미지·영상 AI에 바로 붙여넣을 씬별 프롬프트**를 만들어 주는 데스크탑 앱입니다.
 
-## ⬇ [설치 파일 다운로드 (Windows)](https://github.com/hyewons20/video-promo-prompt-maker/releases/latest/download/VideoPromoPromptMaker-Setup-2.0.0.exe)
+## ⬇ [설치 파일 다운로드 (Windows)](https://github.com/hyewons20/video-promo-prompt-maker/releases/latest/download/VideoPromoPromptMaker-Setup.exe)
 
 받은 exe를 실행하면 설치되고, 바로 사용할 수 있어요. "Windows의 PC 보호" 경고가 뜨면 **추가 정보 → 실행**을 누르세요.
 
@@ -30,7 +30,7 @@ npm start
    npm run dist
    ```
 
-3. `dist\VideoPromoPromptMaker-Setup-2.0.0.exe`를 전달합니다. 받은 사람은 키 입력 없이 바로 씁니다.
+3. `dist\VideoPromoPromptMaker-Setup.exe`를 전달합니다. 받은 사람은 키 입력 없이 바로 씁니다.
 
 > ⚠ 키가 설치 폴더의 `resources\operator-key.txt`에 그대로 들어갑니다. 받은 사람은 누구나 키를 꺼낼 수 있으니 테스트하는 사람에게만 주고, 공개된 곳에 올리지 마세요. Anthropic 콘솔에서 월 사용 한도를 걸어 두세요. 정식 배포 때는 키를 서버에 두는 방식(git 기록 `84b3916`의 `server/`)으로 바꾸는 것이 안전합니다.
 
