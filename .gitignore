@@ -2,3 +2,5 @@ node_modules/
 dist/
 # 운영자 API 키 — 절대 커밋하지 마세요
 operator-key.txt
+server/.dev.vars
+server/.wrangler/

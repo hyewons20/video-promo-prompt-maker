@@ -1,0 +1,18 @@
+name = "video-promo-prompt-server"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# 초대 코드와 사용량 카운트 저장소. 처음 배포 전에 `npx wrangler kv namespace create CODES` 로 만들고 id를 아래에 넣는다.
+[[kv_namespaces]]
+binding = "CODES"
+id = "REPLACE_WITH_KV_ID"
+
+[vars]
+# 코드별 하루 기본 횟수 (코드에 daily 값이 없을 때)
+DEFAULT_CODE_DAILY_LIMIT = "20"
+# 서비스 전체 하루 최대 횟수 — 요금 상한 안전장치
+GLOBAL_DAILY_LIMIT = "200"
+
+[observability]
+enabled = true

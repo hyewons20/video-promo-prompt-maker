@@ -2,33 +2,32 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:" />
   <title>홍보영상 프롬프트 메이커</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header>
-    <div class="brand"><span class="logo">▶</span> 홍보영상 프롬프트 메이커</div>
-    <button id="settingsBtn" class="ghost" title="설정">⚙ 설정</button>
+    <div class="brand"><span class="logo">▶</span> 홍보영상 프롬프트 메이커 <span class="ver">v2</span></div>
+    <div class="head-right">
+      <span id="who" class="who"></span>
+      <button id="settingsBtn" class="ghost" title="초대 코드">🔑 초대 코드</button>
+    </div>
   </header>
 
   <main>
     <form id="form" class="panel">
       <h2>키워드 입력</h2>
       <label>상품 키워드 <span class="req">*</span>
-        <input id="product" placeholder="예: 겨울 코트" required />
+        <input id="product" placeholder="예: 겨울 코트" maxlength="60" required />
       </label>
       <label>샵 이름 <span class="req">*</span>
-        <input id="shop" placeholder="예: 상아 샵" required />
+        <input id="shop" placeholder="예: 상아 샵" maxlength="40" required />
       </label>
 
       <div class="row">
         <label>영상 길이
-          <select id="length">
-            <option value="15">15초</option>
-            <option value="30" selected>30초</option>
-            <option value="60">60초</option>
-          </select>
+          <select id="length"></select>
         </label>
         <label>화면 비율
           <select id="ratio"></select>
@@ -39,25 +38,34 @@
         <select id="tool"></select>
       </label>
 
+      <div class="block">
+        <div class="block-head">
+          <span>참고 이미지 <small>(선택 · 자동 누끼)</small></span>
+          <button id="addImageBtn" type="button" class="mini">+ 추가</button>
+        </div>
+        <div id="images" class="images"></div>
+        <p id="imageHint" class="hint">상품·모델 사진을 넣으면 배경을 지우고, 그 모습 그대로 모든 컷에 유지되도록 프롬프트에 반영해요.</p>
+      </div>
+
       <details>
         <summary>세부 옵션 (선택)</summary>
         <label>분위기 / 톤
-          <input id="tone" placeholder="예: 고급스럽고 따뜻한, 미니멀" />
+          <input id="tone" maxlength="120" placeholder="예: 고급스럽고 따뜻한, 미니멀" />
         </label>
         <label>추가 요청사항
-          <textarea id="notes" rows="3" placeholder="예: 30대 여성 타깃, 캐시미어 소재 강조, 연말 세일 20%"></textarea>
+          <textarea id="notes" rows="3" maxlength="500" placeholder="예: 30대 여성 타깃, 캐시미어 소재 강조, 연말 세일 20%"></textarea>
         </label>
       </details>
 
       <button id="genBtn" type="submit" class="primary">✨ 영상 프롬프트 만들기</button>
       <button id="cancelBtn" type="button" class="ghost hidden">취소</button>
-      <p id="keyWarn" class="warn hidden">API 키가 없습니다. ⚙ 설정에서 Anthropic API 키를 입력하세요.</p>
+      <p id="formWarn" class="warn hidden"></p>
     </form>
 
     <section id="output" class="panel output">
       <div id="empty" class="empty">
         <div class="big">🎬</div>
-        <p>상품 키워드와 샵 이름만 입력하면<br />씬별 영상 프롬프트·자막·내레이션·SNS 문구까지 만들어 드려요.</p>
+        <p>상품 키워드와 샵 이름만 입력하면<br />씬별 키프레임·영상 프롬프트, 자막, 내레이션, SNS 문구까지 만들어 드려요.</p>
       </div>
       <div id="loading" class="hidden">
         <div class="spinner"></div>
@@ -70,14 +78,15 @@
 
   <dialog id="settings">
     <form method="dialog">
-      <h3>설정</h3>
-      <label>Anthropic API 키
-        <input id="apiKey" type="password" placeholder="sk-ant-..." autocomplete="off" />
+      <h3>초대 코드</h3>
+      <label>운영자에게 받은 초대 코드
+        <input id="codeInput" placeholder="ABCD-EFGH-JKLM" autocomplete="off" spellcheck="false" />
       </label>
-      <p class="hint">키는 이 PC에 암호화되어 저장됩니다. console.anthropic.com 에서 발급받을 수 있어요.</p>
+      <p class="hint">코드는 이 PC에 암호화되어 저장됩니다.</p>
+      <p id="codeError" class="warn hidden"></p>
       <div class="dialog-actions">
         <button value="cancel" class="ghost">닫기</button>
-        <button id="saveKeyBtn" value="save" class="primary">저장</button>
+        <button id="saveCodeBtn" value="save" class="primary">저장</button>
       </div>
     </form>
   </dialog>
